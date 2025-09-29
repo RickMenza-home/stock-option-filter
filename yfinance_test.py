@@ -54,7 +54,7 @@ def fetch_options():
 
             tree.insert("", "end", values=(
                 row_data['contractSymbol'],
-                strike,
+                f"${strike:,.2f}",
                 exp,
                 f"${last_price:,.2f}",
                 f"${bid:,.2f}",
@@ -77,9 +77,27 @@ def treeview_sort_column(tv, col, reverse):
     tv.heading(col, command=lambda: treeview_sort_column(tv, col, not reverse))
 
 # --- GUI ---
+columns = ("Symbol", "Strike", "Expiration", "Last Price", "Bid", "Ask", "Mid Price", "Premium", "Margin", "Profit %")
+col_widths = {
+    "Symbol": 140,
+    "Strike": 70,
+    "Expiration": 100,
+    "Last Price": 70,
+    "Bid": 70,
+    "Ask": 70,
+    "Mid Price": 70,
+    "Premium": 70,
+    "Margin": 100,
+    "Profit %": 70
+}
+
+window_width = 0
+for col in columns:
+    window_width += col_widths[col]
+window_width += 20
 window = tk.Tk()
 window.title("Secured Put Option Finder (Yahoo Finance)")
-window.geometry("1000x500")
+window.geometry(f"{window_width}x500")
 
 tk.Label(window, text="Stock Symbol:").pack(pady=2)
 symbol_entry = tk.Entry(window)
@@ -100,10 +118,11 @@ expiration_entry.pack(pady=2)
 fetch_button = tk.Button(window, text="Fetch Put Options", command=fetch_options)
 fetch_button.pack(pady=5)
 
-columns = ("Symbol", "Strike", "Expiration", "Last Price", "Bid", "Ask", "Mid Price", "Premium", "Margin", "Profit %")
 tree = ttk.Treeview(window, columns=columns, show="headings")
+
 for col in columns:
     tree.heading(col, text=col, command=lambda _col=col: treeview_sort_column(tree, _col, False))
+    tree.column(col, width=col_widths[col], minwidth=col_widths[col], stretch=False)
 tree.pack(expand=True, fill="both", padx=10, pady=10)
 
 window.mainloop()
