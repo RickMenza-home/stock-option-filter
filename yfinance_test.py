@@ -47,7 +47,7 @@ def fetch_options():
             bid = row_data['bid'] or 0
             ask = row_data['ask'] or 0
             mid_price = (bid + ask)/2 if (bid and ask) else last_price
-
+            volume = row_data['volume'] or 0
             premium = mid_price * 100
             margin = strike * 100
             profit_percent = (premium / margin) * 100 if margin else 0
@@ -61,6 +61,7 @@ def fetch_options():
                 f"${ask:,.2f}",
                 f"${mid_price:,.2f}",
                 f"${premium:,.2f}",
+                volume,
                 f"${margin:,.2f}",
                 f"{profit_percent:.2f}%"
             ))
@@ -77,7 +78,7 @@ def treeview_sort_column(tv, col, reverse):
     tv.heading(col, command=lambda: treeview_sort_column(tv, col, not reverse))
 
 # --- GUI ---
-columns = ("Symbol", "Strike", "Expiration", "Last Price", "Bid", "Ask", "Mid Price", "Premium", "Margin", "Profit %")
+columns = ("Symbol", "Strike", "Expiration", "Last Price", "Bid", "Ask", "Mid Price", "Premium", "Volume", "Margin", "Profit %")
 col_widths = {
     "Symbol": 140,
     "Strike": 70,
@@ -87,6 +88,7 @@ col_widths = {
     "Ask": 70,
     "Mid Price": 70,
     "Premium": 70,
+    "Volume": 70,
     "Margin": 100,
     "Profit %": 70
 }
