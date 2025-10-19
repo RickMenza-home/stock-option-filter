@@ -1,6 +1,6 @@
 # 🐍 Building the Secured Put Option Finder App (Python → EXE)
 
-This guide explains how to reinstall Python (for use in VS Code) and build a **standalone executable (.exe)** for the **Secured Put Option Finder** app, so that other users don’t need to install dependencies manually.
+This guide explains how to reinstall Python (for use in VS Code) and build a **standalone executable (.exe)** for the **Secured Put and Covered Call Option Finder** app, so that other users don’t need to install dependencies manually.
 
 ---
 
