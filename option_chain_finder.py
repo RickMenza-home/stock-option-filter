@@ -1,11 +1,16 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import yfinance as yf
-
 from datetime import datetime
 
 # --- FUNCTIONS ---
-def fetch_options():
+def fetch_put_options():
+    fetch_options(option_type="put")
+
+def fetch_call_options():
+    fetch_options(option_type="call")
+
+def fetch_options(option_type="put"):
     symbol = symbol_entry.get().upper()
     
     # Validate inputs
@@ -35,21 +40,33 @@ def fetch_options():
         if expiration_filter and exp != expiration_filter:
             continue
         opt_chain = ticker.option_chain(exp)
-        puts = opt_chain.puts
+        options_df = opt_chain.puts if option_type == "put" else opt_chain.calls
 
         # Filter by strike range
-        puts_filtered = puts[(puts['strike'] >= target_strike - range_val) & 
-                             (puts['strike'] <= target_strike + range_val)]
+        filtered = options_df[
+            (options_df['strike'] >= target_strike - range_val) &
+            (options_df['strike'] <= target_strike + range_val)
+        ]
 
-        for _, row_data in puts_filtered.iterrows():
+        for _, row_data in filtered.iterrows():
             strike = row_data['strike']
             last_price = row_data['lastPrice'] or 0
             bid = row_data['bid'] or 0
             ask = row_data['ask'] or 0
-            mid_price = (bid + ask)/2 if (bid and ask) else last_price
+            mid_price = (bid + ask) / 2 if (bid and ask) else last_price
             volume = row_data['volume'] or 0
             premium = mid_price * 100
-            margin = strike * 100
+
+            # Margin: for puts = strike*100; for calls = underlying price * 100
+            if option_type == "put":
+                margin = strike * 100
+            else:
+                try:
+                    current_price = ticker.history(period="1d")["Close"].iloc[-1]
+                except:
+                    current_price = strike
+                margin = current_price * 100
+
             profit_percent = (premium / margin) * 100 if margin else 0
 
             tree.insert("", "end", values=(
@@ -66,9 +83,13 @@ def fetch_options():
                 f"{profit_percent:.2f}%"
             ))
 
+    msg = "Put Options" if option_type == "put" else "Covered Calls"
+    window.title(f"{msg} - {symbol}")
+
+
 # Sorting function
 def treeview_sort_column(tv, col, reverse):
-    l = [(tv.set(k, col).replace('$','').replace(',',''), k) for k in tv.get_children('')]
+    l = [(tv.set(k, col).replace('$', '').replace(',', ''), k) for k in tv.get_children('')]
     try:
         l.sort(key=lambda t: float(t[0]), reverse=reverse)
     except ValueError:
@@ -77,8 +98,12 @@ def treeview_sort_column(tv, col, reverse):
         tv.move(k, '', index)
     tv.heading(col, command=lambda: treeview_sort_column(tv, col, not reverse))
 
+
 # --- GUI ---
-columns = ("Symbol", "Strike", "Expiration", "Last Price", "Bid", "Ask", "Mid Price", "Premium", "Volume", "Margin", "Profit %")
+columns = (
+    "Symbol", "Strike", "Expiration", "Last Price", "Bid", "Ask", 
+    "Mid Price", "Premium", "Volume", "Margin", "Profit %"
+)
 col_widths = {
     "Symbol": 140,
     "Strike": 70,
@@ -93,10 +118,7 @@ col_widths = {
     "Profit %": 70
 }
 
-window_width = 0
-for col in columns:
-    window_width += col_widths[col]
-window_width += 20
+window_width = sum(col_widths.values()) + 20
 window = tk.Tk()
 window.title("Secured Put Option Finder (Yahoo Finance)")
 window.geometry(f"{window_width}x500")
@@ -117,8 +139,25 @@ tk.Label(window, text="Expiration Date (YYYY-MM-DD, optional):").pack(pady=2)
 expiration_entry = tk.Entry(window)
 expiration_entry.pack(pady=2)
 
-fetch_button = tk.Button(window, text="Fetch Put Options", command=fetch_options)
-fetch_button.pack(pady=5)
+# --- Keyboard bindings ---
+def on_enter_key(event):
+    widget = window.focus_get()
+    if widget == fetch_put_button:
+        fetch_put_options()
+    elif widget == fetch_call_button:
+        fetch_call_options()
+
+window.bind("<Return>", on_enter_key)
+
+# Buttons for PUTs and CALLs
+button_frame = tk.Frame(window)
+button_frame.pack(pady=5)
+
+fetch_put_button = tk.Button(button_frame, text="Fetch Put Options", command=fetch_put_options)
+fetch_put_button.pack(side="left", padx=5)
+
+fetch_call_button = tk.Button(button_frame, text="Fetch Covered Calls", command=fetch_call_options)
+fetch_call_button.pack(side="left", padx=5)
 
 tree = ttk.Treeview(window, columns=columns, show="headings")
 
