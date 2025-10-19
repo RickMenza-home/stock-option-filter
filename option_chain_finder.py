@@ -139,6 +139,16 @@ tk.Label(window, text="Expiration Date (YYYY-MM-DD, optional):").pack(pady=2)
 expiration_entry = tk.Entry(window)
 expiration_entry.pack(pady=2)
 
+# --- Keyboard bindings ---
+def on_enter_key(event):
+    widget = window.focus_get()
+    if widget == fetch_put_button:
+        fetch_put_options()
+    elif widget == fetch_call_button:
+        fetch_call_options()
+
+window.bind("<Return>", on_enter_key)
+
 # Buttons for PUTs and CALLs
 button_frame = tk.Frame(window)
 button_frame.pack(pady=5)
