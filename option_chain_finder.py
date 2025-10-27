@@ -120,7 +120,7 @@ col_widths = {
 
 window_width = sum(col_widths.values()) + 20
 window = tk.Tk()
-window.title("Secured Put Option Finder (Yahoo Finance)")
+window.title("Secured Put / Covered Call Option Finder")
 window.geometry(f"{window_width}x500")
 
 tk.Label(window, text="Stock Symbol:").pack(pady=2)
