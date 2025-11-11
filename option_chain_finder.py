@@ -183,7 +183,10 @@ def draw_expected_move_chart(symbol, lower, upper):
     ax.axvline(stock_price, color='blue', linestyle='--', label="Current Price")
     ax.axvspan(lower, upper, color='orange', alpha=0.3, label="Expected Move Range")
 
-    ax.set_xlim(lower - (upper - lower) * 0.2, upper + (upper - lower) * 0.2)
+    # Ensure minimum x-axis width
+    width = max(upper - lower, stock_price * 0.1)  # at least 10% of stock price
+    ax.set_xlim(stock_price - width, stock_price + width)
+
     ax.set_xlabel("Price ($)")
     ax.set_yticks([])
     ax.legend(loc="upper right", fontsize=8)
