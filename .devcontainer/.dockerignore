@@ -1,0 +1,11 @@
+# Ignore build artifacts and editor folders
+build/
+dist/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+.vscode/
+.git
